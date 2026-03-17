@@ -21,7 +21,7 @@ python docx_converter.py test.docx --dpi 300
 python docx_converter.py 입사지원서_코리아써치_.docx --no-jpg
 
 git init
-git remote add origin https://github.com/사용자명/저장소명.git
+git remote add origin https://github.com/jungskky/knowledge.git
 
 git add .
 git commit -m "초기 커밋"
