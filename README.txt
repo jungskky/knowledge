@@ -25,3 +25,13 @@ git remote add origin https://github.com/jungskky/knowledge.git
 
 git add .
 git commit -m "초기 커밋"
+
+# main으로 push
+git push -u origin main
+
+git init
+git add .
+git commit -m "first commit"
+git branch -m master        # 브랜치명 master로 설정
+git remote add origin https://github.com/jungskky/knowledge.git
+git push -u origin master
