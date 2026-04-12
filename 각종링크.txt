@@ -11,6 +11,6 @@ https://github.com/teddynote-lab/langgraph-tutorial/tree/main
 
 https://github.com/teddynote-lab/LangGraph-HandsOn
 
-
-
+# Agentic RAG example
+https://langchain-ai.github.io/langgraph/tutorials/rag/langgraph_agentic_rag/
 
