@@ -1,0 +1,93 @@
+graph db에서 cypher query 생성기의 파이썬 prompt template
+
+만들어줘
+
+그래프 데이터베이스(Graph DB)에서 자연어를 Cypher 쿼리로 변환하기 위한 파이썬용 프롬프트 템플릿(Prompt Template)입니다.
+
+LLM이 그래프의 스키마(노드, 관계, 속성)를 정확히 이해하고 올바른 Cypher 문법을 구사하도록 유도하는 데 초점을 맞추었습니다. LangChain이나 템플릿 리터럴 string 등 파이썬 환경에서 쉽게 조립해 사용할 수 있는 구조입니다.
+
+1. LangChain 스타일 프롬프트 템플릿
+가장 널리 쓰이는 LangChain 형태로 작성한 템플릿입니다. f-string 형태로 직접 파이썬에서 사용할 수도 있습니다.
+
+Python
+from langchain_core.prompts import PromptTemplate
+
+# 1. 템플릿 정의 (Few-Shot 예시를 포함하여 정확도를 높임)
+CYPHER_GENERATION_TEMPLATE = """
+Task: Convert the user's natural language question into a valid Neo4j Cypher query.
+
+[Graph Schema Information]
+Nodes and Labels:
+{schema_nodes}
+
+Relationships and Directions:
+{schema_relationships}
+
+[Instructions]
+1. Use ONLY the specified node labels, relationship types, and properties provided in the schema above.
+2. Do not invent relationships or properties that do not exist in the schema.
+3. Unless specified otherwise, always use a case-insensitive search when matching string values (e.g., toLower(n.name) = toLower($value)).
+4. Return ONLY the executable Cypher query inside a markdown code block. Do not include any conversational text, explanations, or backticks outside the code block.
+
+[Examples]
+Question: "Who directed the movie Inception?"
+Cypher:
+```cypher
+MATCH (p:Person)-[:DIRECTED]->(m:Movie)
+WHERE toLower(m.title) = "inception"
+RETURN p.name
+Question: "Find actors who worked with Tom Hanks."
+Cypher:
+
+Cypher
+MATCH (tom:Person {{name: "Tom Hanks"}})-[:ACTED_IN]->(m:Movie)<-[:ACTED_IN]-(coActor:Person)
+RETURN DISTINCT coActor.name
+[Actual Task]
+Question: {question}
+Cypher:
+"""
+
+2. 템플릿 객체 생성
+cypher_prompt = PromptTemplate(
+input_variables=["schema_nodes", "schema_relationships", "question"],
+template=CYPHER_GENERATION_TEMPLATE
+)
+
+
+---
+
+### 2. 파이썬 실제 적용 예시 (Runnable Code)
+
+실제 프로젝트에서 스키마 데이터와 유저 질문을 조합하여 프롬프트를 완성하는 방법입니다.
+
+```python
+# 내 DB의 스키마 정의 (Neo4j driver나 LangChain의 GraphIndex 등을 통해 동적으로 가져와도 좋습니다)
+my_nodes_schema = """
+- User {id: STRING, name: STRING, age: INTEGER}
+- Product {id: STRING, name: STRING, price: FLOAT, category: STRING}
+"""
+
+my_relationships_schema = """
+- (:User)-[:PURCHASED {date: STRING}]->(:Product)
+- (:User)-[:FOLLOWS]->(:User)
+"""
+
+# 유저가 던진 질문
+user_question = "나이가 30살 이상인 유저들이 구매한 전자제품(Electronics) 카테고리의 상품 이름들을 알려줘"
+
+# 프롬프트 조립
+formatted_prompt = cypher_prompt.format(
+    schema_nodes=my_nodes_schema,
+    schema_relationships=my_relationships_schema,
+    question=user_question
+)
+
+print(formatted_prompt)
+💡 템플릿 작성 시 핵심 팁 (작성 의도)
+관계의 방향성 명시 ((:User)-[:PURCHASED]->(:Product)): LLM이 Cypher 쿼리를 만들 때 화살표 방향(-> 또는 <-)을 헷갈려하는 경우가 많습니다. 스키마에 화살표를 명시해 주는 것이 좋습니다.
+
+소문자 변환(toLower) 처리: 유저가 "Inception"을 "inception"으로 검색하더라도 매칭될 수 있도록 toLower() 함수를 기본 가이드(Instruction)에 포함하면 쿼리 작동 성공률이 비약적으로 올라갑니다.
+
+출력 포맷 고정: LLM이 불필요한 설명("여기 쿼리가 있습니다~")을 덧붙이지 않도록 오직 코드 블록만 반환하도록 강제했습니다.
+
+Cypher 결과물을 다시 자연어로 답변해주는 '결과 해석용' 프롬프트도 필요하신가요?
