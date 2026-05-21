@@ -1,0 +1,48 @@
+claude code 에서 md 파일을 만들어주는 skill 파일 만들어줘
+
+Claude Code에서 .md(마크다운) 파일을 자동으로 생성하거나 작성해 주는 커스텀 스킬(Skill) 파일을 만들고 싶으시군요!
+
+Claude Code는 기본적으로 프로젝트 폴더 내의 파일들을 읽고 쓸 수 있는 강력한 능력을 가지고 있지만, 반복적인 문서화 작업(예: API 문서, README, 릴리즈 노트 등)을 고정된 템플릿으로 빠르게 생성하고 싶을 때 스킬을 등록해 두면 아주 유용합니다.
+
+Claude Code가 인식할 수 있는 시스템 프롬프트 확장 형태로 스킬 파일을 정의해 드릴게요. 프로젝트 루트나 ~/.claude/ 또는 별도의 스킬 폴더에 넣어두고 지시할 수 있는 가이드라인 파일입니다.
+
+1. 스킬 파일 작성하기 (markdown-generator.md)
+이 내용을 프로젝트 폴더 내에 skills/markdown-generator.md 같은 경로로 저장해 두세요. Claude Code에게 "이 스킬 파일을 참고해서 작업해줘"라고 하거나, 시스템 가이드로 읽히기에 딱 좋은 형태입니다.
+
+Markdown
+# Skill: Markdown Document Generator
+
+## Objective
+사용자가 요청한 주제, 코드 기반, 또는 템플릿 요구사항에 맞추어 구조화되고 가독성이 높은 `.md` (마크다운) 파일을 자동으로 생성한다.
+
+## Guidelines & Best Practices
+1. **Front Matter 포함**: 파일 최상단에 제목, 작성일, 작성자, 태그 등을 포함하는 YAML Front Matter를 기본적으로 생성한다 (사용자가 원치 않는 경우 제외).
+2. **명확한 계층 구조**: `#`, `##`, `###`를 명확히 구분하여 문서의 흐름이 한눈에 보이도록 한다.
+3. **시각적 요소 활용**: 
+   - 중요한 경고나 팁은 `> [!NOTE]` 또는 `> [!WARNING]` 같은 블록인용구를 활용한다.
+   - 데이터나 비교는 마크다운 표(Table)를 적극 활용한다.
+4. **코드 블록 언어 명시**: 소스 코드가 포함될 경우 반드시 \`\`\`typescript 처럼 해당 언어를 명시한다.
+
+## Available Templates
+
+### 1. README.md Template
+- 프로젝트 개요, 설치 방법, 사용법, 기여 방법, 라이선스 섹션 포함.
+
+### 2. API_DOCUMENTATION.md Template
+- 엔드포인트, HTTP 메서드, 요청 파라미터, 응답 예시(JSON 코드로 표현) 포함.
+
+### 3. TECH_SPEC.md (기술 설계서) Template
+- 문제 정의, 제안하는 해결책, 아키텍처 구조, 고려사항 포함.
+
+## How to execute
+사용자가 "markdown-generator 스킬을 사용해서 [주제]에 대한 [템플릿 유형] 파일 만들어줘"라고 요청하면, 이 가이드라인에 맞추어 지정된 경로에 직접 파일을 생성(`.write_file` 도구 활용)한다.
+2. Claude Code에서 실제로 사용하는 방법
+위 파일을 만들어 둔 상태에서, Claude Code 터미널 창에 다음과 같이 자연스럽게 명령하시면 됩니다.
+
+유저 입력 예시 1:
+"skills/markdown-generator.md 파일 참고해서, 우리 프로젝트 루트에 멋진 README.md 파일 하나 새로 작성해줘."
+
+유저 입력 예시 2:
+"skills/markdown-generator.md에 있는 API 템플릿 스타일로 docs/auth-api.md 파일 만들어줘. src/auth.ts 코드 읽고 분석해서 작성해 주면 돼."
+
+이렇게 지시하면 Claude Code가 스스로 파일 시스템 도구를 사용해 해당 경로에 깔끔한 마크다운 문서를 뚝딱 만들어 줄 겁니다. 혹시 특정 프레임워크용(예: Astro, Next.js 블로그용) 마크다운 포맷이 따로 필요하시다면 어떤 항목들이 필수로 들어가야 하는지 알려주세요. 맞춤형 템플릿으로 수정해 드릴게요!
